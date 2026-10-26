@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teorema de Tales | Guía Interactiva Hyperframe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050814;
+            --bg-secondary: #0a0f1d;
+            --bg-card: rgba(15, 23, 42, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(0, 243, 255, 0.3);
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff007f;
+            --neon-purple: #9d00ff;
+            --neon-green: #00ff88;
+            --neon-amber: #ffb700;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Background grid effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+            transition: 0.5s;
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px -10px rgba(0, 243, 255, 0.15);
+        }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: rgba(5, 8, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-glass);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: var(--font-mono);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 7rem 0 4rem 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Hero Section */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            color: var(--neon-cyan);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-mono);
+        }
+
+        /* SVG Circle Animation */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .anim-circle {
+            stroke: var(--neon-cyan);
+            stroke-width: 3;
+            fill: rgba(0, 243, 255, 0.05);
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            animation: drawStroke 4s ease-in-out infinite alternate;
+        }
+
+        .anim-triangle {
+            stroke: var(--neon-magenta);
+            stroke-width: 3;
+            fill: rgba(255, 0, 127, 0.05);
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: drawStroke 4s ease-in-out infinite alternate 0.5s;
+        }
+
+        @keyframes drawStroke {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Section Headings */
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .concept-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--neon-cyan);
+        }
+
+        .math-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--neon-magenta);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Interactive Fundamental Theorem Demo */
+        .interactive-demo {
+            margin-top: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px dashed var(--border-glass);
+        }
+
+        .demo-inputs {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            font-family: var(--font-mono);
+        }
+
+        .demo-inputs input {
+            width: 50px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 0.3rem;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* Parallel Lines Section */
+        .parallel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .step-solver {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .solver-btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 1rem;
+        }
+
+        .solver-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .solver-steps {
+            margin-top: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            min-height: 60px;
+        }
+
+        /* Triangles & Corolario Section */
+        .triangle-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .error-alert {
+            background: rgba(255, 0, 127, 0.1);
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .error-alert h4 {
+            color: var(--neon-magenta);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .quiz-card {
+            margin-bottom: 2rem;
+        }
+
+        .quiz-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: var(--text-main);
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        .quiz-option:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--neon-green);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--neon-magenta);
+            background: rgba(255, 0, 127, 0.1);
+            color: var(--neon-magenta);
+        }
+
+        .quiz-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-input-group input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .quiz-feedback.error {
+            background: rgba(255, 0, 127, 0.1);
+            border: 1px solid var(--neon-magenta);
+            color: var(--neon-magenta);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero-grid, .parallel-grid, .triangle-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">THALES_HYPERFRAME //</div>
+        <ul class="nav-links">
+            <li><a href="#hero">Inicio</a></li>
+            <li><a href="#concepts">Conceptos</a></li>
+            <li><a href="#parallels">Rectas Paralelas</a></li>
+            <li><a href="#triangles">Triángulos</a></li>
+            <li><a href="#practice">Práctica</a></li>
+        </ul>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section id="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <div>
+                    <div class="badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        GUÍA INTERACTIVA DE MATEMÁTICAS
+                    </div>
+                    <h1 class="hero-title">El Dominio del <span>Teorema de Tales</span></h1>
+                    <p class="hero-desc">
+                        Explora la geometría proporcional con un enfoque moderno. Desde el sabio de Mileto hasta las aplicaciones avanzadas en triángulos y rectas paralelas.
+                    </p>
+                    <div style="background: rgba(255,255,255,0.03); border-left: 3px solid var(--neon-cyan); padding: 1.2rem; border-radius: 0 12px 12px 0;">
+                        <strong style="color: var(--neon-cyan);">Tales de Mileto (624–546 a. C.)</strong><br>
+                        Primer filósofo, matemático y astrónomo de la historia occidental. Introdujo el pensamiento deductivo y el uso de explicaciones naturales para el universo.
+                    </div>
+                </div>
+                <div class="svg-container glass-card">
+                    <svg width="260" height="260" viewBox="0 0 200 200">
+                        <!-- Círculo inscrito / circunscrito animado -->
+                        <circle cx="100" cy="100" r="70" class="anim-circle" />
+                        <polygon points="30,150 170,150 100,30" class="anim-triangle" />
+                        <circle cx="100" cy="100" r="4" fill="var(--neon-cyan)" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Conceptos Previos -->
+    <section id="concepts">
+        <div class="container">
+            <div class="section-header">
+                <h2>Conceptos Fundamentales</h2>
+                <p>Las bases matemáticas necesarias para comprender la proporcionalidad geométrica.</p>
+            </div>
+            <div class="concepts-grid">
+                <!-- Tarjeta 1: Razón -->
+                <div class="glass-card concept-card">
+                    <h3>01. Razón Geométrica</h3>
+                    <p>Es el cociente (división) entre dos cantidades. Nos indica cuántas veces contiene una cantidad a la otra.</p>
+                    <div class="math-box">
+                        Razón = a / b  (ej: 36 / 12 = 3)
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">Compara magnitudes homogéneas mediante división exacta.</p>
+                </div>
+
+                <!-- Tarjeta 2: Proporción -->
+                <div class="glass-card concept-card">
+                    <h3>02. Proporción</h3>
+                    <p>Es la igualdad establecida entre dos razones geométricas de igual valor.</p>
+                    <div class="math-box">
+                        a / b = c / d
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">Se lee: "a es a b como c es a d".</p>
+                </div>
+
+                <!-- Tarjeta 3: Teorema Fundamental -->
+                <div class="glass-card concept-card">
+                    <h3>03. Teorema Fundamental</h3>
+                    <p>En toda proporción, el producto de los extremos es igual al producto de los medios.</p>
+                    <div class="math-box">
+                        a · d = b · c
+                    </div>
+                    <div class="interactive-demo">
+                        <span style="font-size: 0.85rem; color: var(--neon-cyan);">Prueba interactiva:</span>
+                        <div class="demo-inputs">
+                            <input type="number" id="demo-a" value="2" oninput="calcProp()"> / 
+                            <input type="number" id="demo-b" value="4" oninput="calcProp()"> = 
+                            <input type="number" id="demo-c" value="4" oninput="calcProp()"> / 
+                            <input type="number" id="demo-d" value="8" oninput="calcProp()">
+                        </div>
+                        <div id="demo-result" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--neon-green);">2·8 = 16 | 4·4 = 16 (¡Proporción Válida!)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Teorema de Tales en Rectas Paralelas -->
+    <section id="parallels">
+        <div class="container">
+            <div class="section-header">
+                <h2>Teorema de Tales en Rectas Paralelas</h2>
+                <p>Relación métrica entre segmentos formados por transversales que cortan paralelas.</p>
+            </div>
+            <div class="parallel-grid">
+                <div class="glass-card">
+                    <h3 style="color: var(--neon-cyan); margin-bottom: 1rem;">Enunciado Oficial</h3>
+                    <p style="margin-bottom: 1.5rem;">
+                        "Si tres o más rectas paralelas son intersectadas por dos transversales, los segmentos determinados en las paralelas son proporcionales."
+                    </p>
+                    <div class="math-box">
+                        AB / BC = A'B' / B'C'
+                    </div>
+                    <div class="step-solver">
+                        <strong>Ejemplo Resuelto Interactivo</strong>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            Datos: AB = 8, BC = 24, A'B' = x, B'C' = 15
+                        </p>
+                        <button class="solver-btn" onclick="runParallelSolver()">Ver Paso a Paso</button>
+                        <div class="solver-steps" id="parallel-steps">Haz clic en el botón para iniciar la simulación analítica.</div>
+                    </div>
+                </div>
+                <div class="svg-container glass-card">
+                    <svg width="320" height="260" viewBox="0 0 320 260">
+                        <!-- Rectas Paralelas L1, L2, L3 -->
+                        <line x1="20" y1="60" x2="300" y2="60" stroke="var(--neon-cyan)" stroke-width="2" />
+                        <line x1="20" y1="130" x2="300" y2="130" stroke="var(--neon-cyan)" stroke-width="2" />
+                        <line x1="20" y1="200" x2="300" y2="200" stroke="var(--neon-cyan)" stroke-width="2" />
+                        <text x="305" y="65" fill="var(--neon-cyan)" font-size="12" font-family="monospace">L₁</text>
+                        <text x="305" y="135" fill="var(--neon-cyan)" font-size="12" font-family="monospace">L₂</text>
+                        <text x="305" y="205" fill="var(--neon-cyan)" font-size="12" font-family="monospace">L₃</text>
+
+                        <!-- Transversales -->
+                        <line x1="70" y1="20" x2="130" y2="240" stroke="var(--neon-magenta)" stroke-width="2.5" />
+                        <line x1="210" y1="20" x2="260" y2="240" stroke="var(--neon-purple)" stroke-width="2.5" />
+
+                        <!-- Etiquetas de segmentos -->
+                        <text x="85" y="90" fill="var(--text-main)" font-size="12" font-family="monospace">8</text>
+                        <text x="105" y="170" fill="var(--text-main)" font-size="12" font-family="monospace">24</text>
+                        <text x="220" y="90" fill="var(--text-main)" font-size="12" font-family="monospace">x</text>
+                        <text x="240" y="170" fill="var(--text-main)" font-size="12" font-family="monospace">15</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Teorema de Tales en Triángulos (Corolario) -->
+    <section id="triangles">
+        <div class="container">
+            <div class="section-header">
+                <h2>Teorema en Triángulos (Corolario)</h2>
+                <p>Aplicación directa al interior de estructuras triangulares.</p>
+            </div>
+            <div class="triangle-grid">
+                <div class="svg-container glass-card">
+                    <svg width="300" height="260" viewBox="0 0 300 260">
+                        <!-- Triángulo principal ABC -->
+                        <polygon points="150,30 40,220 260,220" fill="rgba(0, 243, 255, 0.03)" stroke="var(--neon-cyan)" stroke-width="2" />
+                        <!-- Línea paralela DE -->
+                        <line x1="95" y1="125" x2="205" y2="125" stroke="var(--neon-magenta)" stroke-width="2.5" />
+                        <!-- Vértices y etiquetas -->
+                        <text x="145" y="20" fill="var(--neon-cyan)" font-family="monospace" font-weight="bold">A</text>
+                        <text x="25" y="235" fill="var(--neon-cyan)" font-family="monospace" font-weight="bold">B</text>
+                        <text x="270" y="235" fill="var(--neon-cyan)" font-family="monospace" font-weight="bold">C</text>
+                        <text x="80" y="125" fill="var(--neon-magenta)" font-family="monospace" font-weight="bold">D</text>
+                        <text x="215" y="125" fill="var(--neon-magenta)" font-family="monospace" font-weight="bold">E</text>
+                    </svg>
+                </div>
+                <div>
+                    <div class="glass-card">
+                        <h3 style="color: var(--neon-cyan); margin-bottom: 1rem;">Corolario Fundamental</h3>
+                        <p style="margin-bottom: 1rem;">
+                            Toda recta paralela a un lado de un triángulo que corta a los otros dos lados determina un nuevo triángulo semejante al original.
+                        </p>
+                        <div class="math-box">
+                            Segmentos contiguos: AD / DB = AE / EC<br>
+                            Lados totales: AD / AB = AE / AC = DE / BC
+                        </div>
+                        <div class="error-alert">
+                            <h4>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                ¡Alerta de Error Común!
+                            </h4>
+                            <p style="font-size: 0.9rem; color: var(--text-main);">
+                                <strong>DE / BC NO ES IGUAL A AD / DB</strong><br>
+                                Nunca iguales la base paralela con una subdivisión contigua inferior de los lados transversales. La base se compara contra el lado total (DE / BC = AD / AB).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Sección de Práctica (Quiz Interactivo) -->
+    <section id="practice">
+        <div class="container">
+            <div class="section-header">
+                <h2>Sección de Práctica Interactiva</h2>
+                <p>Pon a prueba tus conocimientos resolviendo problemas aplicados del Teorema de Tales.</p>
+            </div>
+            
+            <div class="quiz-container">
+                <!-- Ejercicio 1 -->
+                <div class="glass-card quiz-card">
+                    <div class="quiz-question">1. Rectas Paralelas: Si L₁ // L₂ // L₃, la transversal 1 mide 3 cm y x cm. La transversal 2 mide 5 cm y 10 cm. ¿Cuánto vale x?</div>
+                    <div class="quiz-input-group">
+                        <input type="number" id="q1-input" placeholder="Ingresa el valor de x (ej: 6)">
+                        <button class="solver-btn" style="margin-top:0;" onclick="checkQ1()">Comprobar</button>
+                    </div>
+                    <div class="quiz-feedback" id="q1-feedback"></div>
+                </div>
+
+                <!-- Ejercicio 2 -->
+                <div class="glass-card quiz-card">
+                    <div class="quiz-question">2. Triángulos: En el triángulo ABC, DE // BC. Si AD = 3 cm, DB = 6 cm y AE = 4 cm. ¿Cuánto mide el segmento EC?</div>
+                    <div class="quiz-input-group">
+                        <input type="number" id="q2-input" placeholder="Ingresa el valor de EC en cm">
+                        <button class="solver-btn" style="margin-top:0;" onclick="checkQ2()">Comprobar</button>
+                    </div>
+                    <div class="quiz-feedback" id="q2-feedback"></div>
+                </div>
+
+                <!-- Ejercicio 3 -->
+                <div class="glass-card quiz-card">
+                    <div class="quiz-question">3. Ecuación Proporcional: Transversal izquierda = 4 cm y 6 cm. Transversal derecha = x y (x + 3). ¿Cuál es el valor de x?</div>
+                    <div class="quiz-input-group">
+                        <input type="number" id="q3-input" placeholder="Ingresa x">
+                        <button class="solver-btn" style="margin-top:0;" onclick="checkQ3()">Comprobar</button>
+                    </div>
+                    <div class="quiz-feedback" id="q3-feedback"></div>
+                </div>
+
+                <!-- Ejercicio 4 -->
+                <div class="glass-card quiz-card">
+                    <div class="quiz-question">4. Bases Paralelas: En ABC, DE // BC. AD = 6, DB = 4, BC = 15. ¿Cuánto mide el segmento DE?</div>
+                    <div class="quiz-input-group">
+                        <input type="number" id="q4-input" placeholder="Ingresa DE">
+                        <button class="solver-btn" style="margin-top:0;" onclick="checkQ4()">Comprobar</button>
+                    </div>
+                    <div class="quiz-feedback" id="q4-feedback"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>THALES_HYPERFRAME // Guía de Estudio Interactiva Avanzada. Diseñada con estándares UI/UX modernos y gráficos vectoriales nativos.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Interactive Fundamental Theorem Demo
+        function calcProp() {
+            const a = parseFloat(document.getElementById('demo-a').value) || 0;
+            const b = parseFloat(document.getElementById('demo-b').value) || 0;
+            const c = parseFloat(document.getElementById('demo-c').value) || 0;
+            const d = parseFloat(document.getElementById('demo-d').value) || 0;
+            
+            const prod1 = a * d;
+            const prod2 = b * c;
+            const resEl = document.getElementById('demo-result');
+            
+            if (prod1 === prod2) {
+                resEl.style.color = 'var(--neon-green)';
+                resEl.innerHTML = `${a}·${d} = ${prod1} | ${b}·${c} = ${prod2} (¡Proporción Válida!)`;
+            } else {
+                resEl.style.color = 'var(--neon-magenta)';
+                resEl.innerHTML = `${a}·${d} = ${prod1} | ${b}·${c} = ${prod2} (No forman proporción)`;
+            }
+        }
+
+        // Parallel Solver Animation
+        function runParallelSolver() {
+            const stepsEl = document.getElementById('parallel-steps');
+            const steps = [
+                "Paso 1: Plantear la proporción con los segmentos dados -> 8 / 24 = x / 15",
+                "Paso 2: Aplicar el Teorema Fundamental (productos cruzados) -> 24 · x = 8 · 15",
+                "Paso 3: Multiplicar los extremos -> 24x = 120",
+                "Paso 4: Despejar x -> x = 120 / 24",
+                "¡Resultado Final! -> x = 5"
+            ];
+            
+            let i = 0;
+            stepsEl.style.color = 'var(--neon-cyan)';
+            stepsEl.innerHTML = steps[i];
+            
+            const interval = setInterval(() => {
+                i++;
+                if (i < steps.length) {
+                    stepsEl.innerHTML = steps[i];
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1200);
+        }
+
+        // Quiz Checkers
+        function checkQ1() {
+            const val = parseFloat(document.getElementById('q1-input').value);
+            const fb = document.getElementById('q1-feedback');
+            fb.className = "quiz-feedback show";
+            if (val === 6) {
+                fb.className += " success";
+                fb.innerHTML = "¡Correcto! Planteamiento: 3 / x = 5 / 10 -> 5x = 30 -> x = 6 cm.";
+            } else {
+                fb.className += " error";
+                fb.innerHTML = "Incorrecto. Recuerda la proporción: 3/x = 5/10. Inténtalo de nuevo.";
+            }
+        }
+
+        function checkQ2() {
+            const val = parseFloat(document.getElementById('q2-input').value);
+            const fb = document.getElementById('q2-feedback');
+            fb.className = "quiz-feedback show";
+            if (val === 8) {
+                fb.className += " success";
+                fb.innerHTML = "¡Correcto! AD/DB = AE/EC -> 3/6 = 4/EC -> 3(EC) = 24 -> EC = 8 cm.";
+            } else {
+                fb.className += " error";
+                fb.innerHTML = "Incorrecto. Utiliza AD/DB = AE/EC (3/6 = 4/EC).";
+            }
+        }
+
+        function checkQ3() {
+            const val = parseFloat(document.getElementById('q3-input').value);
+            const fb = document.getElementById('q3-feedback');
+            fb.className = "quiz-feedback show";
+            if (val === 6) {
+                fb.className += " success";
+                fb.innerHTML = "¡Correcto! 4/6 = x/(x+3) -> 4(x+3) = 6x -> 4x + 12 = 6x -> 2x = 12 -> x = 6.";
+            } else {
+                fb.className += " error";
+                fb.innerHTML = "Incorrecto. Resuelve la ecuación: 4/6 = x/(x+3).";
+            }
+        }
+
+        function checkQ4() {
+            const val = parseFloat(document.getElementById('q4-input').value);
+            const fb = document.getElementById('q4-feedback');
+            fb.className = "quiz-feedback show";
+            if (val === 9) {
+                fb.className += " success";
+                fb.innerHTML = "¡Correcto! Lado total AB = 6 + 4 = 10. Fórmula: AD/AB = DE/BC -> 6/10 = DE/15 -> 10(DE) = 90 -> DE = 9.";
+            } else {
+                fb.className += " error";
+                fb.innerHTML = "Incorrecto. Recuerda que se compara el segmento contra el lado total (AB = 10).";
+            }
+        }
+    </script>
+</body>
+</html>
